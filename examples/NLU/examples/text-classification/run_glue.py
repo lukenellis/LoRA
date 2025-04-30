@@ -654,6 +654,7 @@ def main():
     plt.bar(labels, times)
     plt.title('Inference Timing Breakdown')
     plt.ylabel('Seconds')
+    plt.savefig("inference_timing_chart.png")
     plt.show()
 
 
