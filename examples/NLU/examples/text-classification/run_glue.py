@@ -617,49 +617,47 @@ def main():
                             item = label_list[item]
                             writer.write(f"{index}\t{item}\n")
 
+    # === CUSTOM INFERENCE TIMING AFTER TRAINING/EVAL ===
+
+    print("\n=== Running Custom Inference Timing ===")
+
+    sample_sentence = "The ship sank beneath the waves."
+
+    # Preprocessing
+    start_pre = time.time()
+    inputs = tokenizer(sample_sentence, return_tensors="pt", padding=True, truncation=True)
+    end_pre = time.time()
+
+    # Inference
+    start_inf = time.time()
+    with torch.no_grad():
+        outputs = model(**inputs)
+    end_inf = time.time()
+
+    # Postprocessing
+    start_post = time.time()
+    prediction = torch.argmax(outputs.logits, dim=-1).item()
+    end_post = time.time()
+
+    # Print prediction and timing
+    print(f"\nPrediction: {prediction} (1 = acceptable, 0 = not acceptable)")
+    print(f"Preprocessing time: {end_pre - start_pre:.4f} sec")
+    print(f"Inference time:     {end_inf - start_inf:.4f} sec")
+    print(f"Postprocessing time:{end_post - start_post:.4f} sec\n")
+
+    # Plot timing
+    times = [end_pre - start_pre, end_inf - start_inf, end_post - start_post]
+    labels = ['Preprocessing', 'Inference', 'Postprocessing']
+
+    plt.bar(labels, times)
+    plt.title('Inference Timing Breakdown')
+    plt.ylabel('Seconds')
+    plt.show()
+
 
 def _mp_fn(index):
     # For xla_spawn (TPUs)
     main()
-
-# === CUSTOM INFERENCE TIMING AFTER TRAINING/EVAL ===
-import time
-import matplotlib.pyplot as plt
-
-print("\n=== Running Custom Inference Timing ===")
-
-sample_sentence = "The ship sank beneath the waves."
-
-# Preprocessing
-start_pre = time.time()
-inputs = tokenizer(sample_sentence, return_tensors="pt", padding=True, truncation=True)
-end_pre = time.time()
-
-# Inference
-start_inf = time.time()
-with torch.no_grad():
-    outputs = model(**inputs)
-end_inf = time.time()
-
-# Postprocessing
-start_post = time.time()
-prediction = torch.argmax(outputs.logits, dim=-1).item()
-end_post = time.time()
-
-# Print prediction and timing
-print(f"\nPrediction: {prediction} (1 = acceptable, 0 = not acceptable)")
-print(f"Preprocessing time: {end_pre - start_pre:.4f} sec")
-print(f"Inference time:     {end_inf - start_inf:.4f} sec")
-print(f"Postprocessing time:{end_post - start_post:.4f} sec\n")
-
-# Plot timing
-times = [end_pre - start_pre, end_inf - start_inf, end_post - start_post]
-labels = ['Preprocessing', 'Inference', 'Postprocessing']
-
-plt.bar(labels, times)
-plt.title('Inference Timing Breakdown')
-plt.ylabel('Seconds')
-plt.show()
 
 
 
