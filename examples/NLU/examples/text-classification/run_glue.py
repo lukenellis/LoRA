@@ -621,11 +621,13 @@ def main():
 
     print("\n=== Running Custom Inference Timing ===")
 
+
     sample_sentence = "The ship sank beneath the waves."
 
     # Preprocessing
     start_pre = time.time()
     inputs = tokenizer(sample_sentence, return_tensors="pt", padding=True, truncation=True)
+    inputs = {k: v.to(model.device) for k, v in inputs.items()}
     end_pre = time.time()
 
     # Inference
