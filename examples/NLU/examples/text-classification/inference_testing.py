@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 # === Load your trained LoRA model ===
-# Replace this with your output_dir (where model was saved after training)
 model_dir = "../text-classification/model"  # or wherever your model is saved
 model = AutoModelForSequenceClassification.from_pretrained(model_dir)
 tokenizer = AutoTokenizer.from_pretrained("roberta-base")
