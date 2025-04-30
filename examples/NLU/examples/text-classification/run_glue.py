@@ -515,6 +515,11 @@ def main():
     # You can define your custom compute_metrics function. It takes an `EvalPrediction` object (a namedtuple with a
     # predictions and label_ids field) and has to return a dictionary string to float.
     def compute_metrics(p: EvalPrediction):
+        print(">> compute_metrics debug:")
+        print("Preds:", preds[:10])
+        print("Labels:", p.label_ids[:10])
+        print("Shape preds:", preds.shape)
+        print("Shape labels:", p.label_ids.shape)
         preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
         preds = np.squeeze(preds) if is_regression else np.argmax(preds, axis=1)
         if data_args.task_name is not None:
@@ -534,6 +539,7 @@ def main():
         data_collator = DataCollatorWithPadding(tokenizer, pad_to_multiple_of=8)
     else:
         data_collator = None
+
 
     # Initialize our Trainer
     trainer = Trainer(
