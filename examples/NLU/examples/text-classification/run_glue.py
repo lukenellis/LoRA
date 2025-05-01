@@ -540,7 +540,7 @@ def main():
         data_collator = None
 
     if model_args.lora_r == -1:
-        search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config)
+        search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config, train_dataset, eval_dataset, data_collator)
         return
 
 
@@ -668,7 +668,7 @@ def main():
     plt.show()
 
 # === LoRA Rank Search with dynamic r ===
-def search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config):
+def search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config, train_dataset, eval_dataset, data_collator):
     if model_args.lora_r == -1:  # You’ll pass --lora_r -1 to trigger search
             auto_r_values = [2, 4, 8, 16, 32]
             best_r = None
