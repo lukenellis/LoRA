@@ -650,19 +650,10 @@ def main():
     plt.savefig("inference_timing_chart.png")
     plt.show()
 
-def compute_metrics(p: EvalPrediction):
-        is_regression = False
-        preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
-        preds = np.squeeze(preds) if is_regression else np.argmax(preds, axis=1)
-        if data_args.task_name is not None:
-            result = metric.compute(predictions=preds, references=p.label_ids)
-            if len(result) > 1:
-                result["combined_score"] = np.mean(list(result.values())).item()
-            return result
-        elif is_regression:
-            return {"mse": ((preds - p.label_ids) ** 2).mean().item()}
-        else:
-            return {"accuracy": (preds == p.label_ids).astype(np.float32).mean().item()}
+def compute_metrics(p):
+    preds = np.argmax(p.predictions, axis=1)
+    return metric.compute(predictions=preds, references=p.label_ids)
+
 
 # === LoRA Rank Search with dynamic r ===
 def search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config, train_dataset, eval_dataset, data_collator):
