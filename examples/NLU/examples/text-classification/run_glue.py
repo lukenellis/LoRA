@@ -513,9 +513,6 @@ def main():
     if data_args.task_name is not None:
         metric = load_metric("glue", data_args.task_name)
 
-    if model_args.lora_r == -1:
-        search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config)
-        return  # Avoid retraining after search
     # TODO: When datasets metrics include regular accuracy, make an else here and remove special branch from
     # compute_metrics
 
@@ -541,6 +538,11 @@ def main():
         data_collator = DataCollatorWithPadding(tokenizer, pad_to_multiple_of=8)
     else:
         data_collator = None
+
+    if model_args.lora_r == -1:
+        search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config)
+        return
+
 
     # Initialize our Trainer
     trainer = Trainer(
