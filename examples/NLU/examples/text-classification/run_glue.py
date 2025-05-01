@@ -28,6 +28,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 from datasets import load_dataset
 import evaluate
+from peft import get_peft_model, LoraConfig, TaskType #adding peft library so LoRA is properly applied
 
 import transformers
 from transformers import (
@@ -385,6 +386,18 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
+    if model_args.apply_lora:
+        if model_args.lora_r is not None and model_args.lora_alpha is not None:
+            lora_config = LoraConfig(
+                r=model_args.lora_r,
+                lora_alpha=model_args.lora_alpha,
+                task_type=TaskType.SEQ_CLS,
+                inference_mode=False
+            )
+            model = get_peft_model(model, lora_config)
+            model.print_trainable_parameters()
+        else:
+            raise ValueError("LoRA requires both --lora_r and --lora_alpha to be set.")
                                      
     trainable_params = []
     if model_args.apply_lora:
@@ -681,6 +694,18 @@ def search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels
                     revision=model_args.model_revision,
                     use_auth_token=True if model_args.use_auth_token else None,
                 )
+                if model_args.apply_lora:
+                    if model_args.lora_r is not None and model_args.lora_alpha is not None:
+                        lora_config = LoraConfig(
+                            r=model_args.lora_r,
+                            lora_alpha=model_args.lora_alpha,
+                            task_type=TaskType.SEQ_CLS,
+                            inference_mode=False
+                        )
+                        model = get_peft_model(model, lora_config)
+                        model.print_trainable_parameters()
+                    else:
+                        raise ValueError("LoRA requires both --lora_r and --lora_alpha to be set.")
 
                 # Re-create trainer and evaluate
                 trainer = Trainer(
