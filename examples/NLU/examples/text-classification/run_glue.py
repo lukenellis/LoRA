@@ -385,14 +385,6 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
-
-     for name, param in model.named_parameters():
-     if param.requires_grad:
-        print(f"Trainable: {name}")
-     total = sum(p.numel() for p in model.parameters())
-     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
-     print(f"Trainable params: {trainable} / {total} ({100 * trainable/total:.2f}%)")
-
                                      
     trainable_params = []
     if model_args.apply_lora:
