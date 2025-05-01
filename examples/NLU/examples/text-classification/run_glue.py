@@ -26,8 +26,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from dataclasses import dataclass, field
 from typing import Optional
-from datasets import load_dataset
-from evaluate import load as load_metric
+from datasets import load_dataset, load_metric
+#from evaluate import load as load_metric
 
 import transformers
 from transformers import (
