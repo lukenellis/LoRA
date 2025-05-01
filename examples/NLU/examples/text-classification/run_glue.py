@@ -222,6 +222,12 @@ class ModelArguments:
     )
 
 
+def make_compute_metrics(metric):
+    def compute_metrics(p):
+        preds = np.argmax(p.predictions, axis=1)
+        return metric.compute(predictions=preds, references=p.label_ids)
+    return compute_metrics
+
 def main():
     # See all possible arguments in src/transformers/training_args.py
     # or by passing the --help flag to this script.
@@ -512,6 +518,7 @@ def main():
     # Get the metric function
     if data_args.task_name is not None:
         metric = load_metric("glue", data_args.task_name)
+        compute_metrics = make_compute_metrics(metric)
 
 
     # Data collator will default to DataCollatorWithPadding, so we change it if we already did the padding.
@@ -523,7 +530,7 @@ def main():
         data_collator = None
 
     if model_args.lora_r == -1:
-        search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config, train_dataset, eval_dataset, data_collator)
+        search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config, train_dataset, eval_dataset, data_collator, compute_metrics)
         return
 
 
@@ -650,13 +657,11 @@ def main():
     plt.savefig("inference_timing_chart.png")
     plt.show()
 
-def compute_metrics(p):
-    preds = np.argmax(p.predictions, axis=1)
-    return metric.compute(predictions=preds, references=p.label_ids)
+
 
 
 # === LoRA Rank Search with dynamic r ===
-def search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config, train_dataset, eval_dataset, data_collator):
+def search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric, config, train_dataset, eval_dataset, data_collator, compute_metrics):
     if model_args.lora_r == -1:  # You’ll pass --lora_r -1 to trigger search
             auto_r_values = [2, 8, 16]
             best_r = None
