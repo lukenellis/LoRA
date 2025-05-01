@@ -234,10 +234,6 @@ def main():
         model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
         model_args, data_args, training_args = parser.parse_args_into_dataclasses()
-        # If auto_r flag is used, define candidate r values to search over
-        if model_args.lora_r == -1:
-            search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric)
-            return  # Avoid retraining after search
 
 
 
@@ -516,6 +512,10 @@ def main():
     # Get the metric function
     if data_args.task_name is not None:
         metric = load_metric("glue", data_args.task_name)
+
+    if model_args.lora_r == -1:
+        search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric)
+        return  # Avoid retraining after search
     # TODO: When datasets metrics include regular accuracy, make an else here and remove special branch from
     # compute_metrics
 
