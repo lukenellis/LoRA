@@ -234,6 +234,12 @@ def main():
         model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
         model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+        # If auto_r flag is used, define candidate r values to search over
+        if model_args.lora_r == -1:
+            search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric)
+            return  # Avoid retraining after search
+
+
 
     #torch.use_deterministic_algorithms(training_args.use_deterministic_algorithms)
     #logger.info("use_deterministic_algorithms: " + str(torch.are_deterministic_algorithms_enabled()))
@@ -658,6 +664,70 @@ def main():
     plt.ylabel('Seconds')
     plt.savefig("inference_timing_chart.png")
     plt.show()
+
+# === LoRA Rank Search with dynamic r ===
+def search_lora_rank(model_args, data_args, training_args, tokenizer, num_labels, datasets, is_regression, metric):
+    if model_args.lora_r == -1:  # You’ll pass --lora_r -1 to trigger search
+            auto_r_values = [2, 4, 8, 16, 32]
+            best_r = None
+            best_score = -float("inf")
+            results = {}
+
+            for r_val in auto_r_values:
+                print(f"\n=== Trying LoRA rank r={r_val} ===")
+                model_args.lora_r = r_val
+                config.lora_r = r_val  # Ensure config uses new r
+
+                # Reload model with new config
+                model = AutoModelForSequenceClassification.from_pretrained(
+                    model_args.model_name_or_path,
+                    config=config,
+                    cache_dir=model_args.cache_dir,
+                    revision=model_args.model_revision,
+                    use_auth_token=True if model_args.use_auth_token else None,
+                )
+
+                # Re-create trainer and evaluate
+                trainer = Trainer(
+                    model=model,
+                    args=training_args,
+                    train_dataset=train_dataset if training_args.do_train else None,
+                    eval_dataset=eval_dataset if training_args.do_eval else None,
+                    compute_metrics=compute_metrics,
+                    tokenizer=tokenizer,
+                    data_collator=data_collator,
+                )
+
+                trainer.train()
+                eval_metrics = trainer.evaluate()
+                eval_score = eval_metrics.get("eval_accuracy") or eval_metrics.get("eval_matthews_correlation")
+
+                print(f"Validation Score for r={r_val}: {eval_score}")
+                results[r_val] = eval_score
+
+                if eval_score > best_score:
+                    best_score = eval_score
+                    best_r = r_val
+
+            print(f"\nBest LoRA rank: r={best_r} with score={best_score}")
+
+            # === Plotting LoRA dynamic r search results ===
+            r_vals = list(results.keys())
+            scores = list(results.values())
+
+            plt.figure(figsize=(8, 5))
+            plt.plot(r_vals, scores, marker='o', linestyle='-', color='blue')
+            plt.title('Validation Accuracy vs. LoRA Rank (r)')
+            plt.xlabel('LoRA Rank (r)')
+            plt.ylabel('Validation Score')
+            plt.grid(True)
+            plt.xticks(r_vals)
+            plt.savefig("lora_rank_vs_accuracy.png")
+            plt.show()
+
+            return  # End after searching
+    
+
 
  
 def _mp_fn(index):
