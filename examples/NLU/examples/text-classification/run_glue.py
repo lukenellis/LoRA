@@ -26,8 +26,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from dataclasses import dataclass, field
 from typing import Optional
-from datasets import load_dataset, load_metric
-#from evaluate import load as load_metric
+from datasets import load_dataset
+import evaluate
 
 import transformers
 from transformers import (
@@ -517,7 +517,7 @@ def main():
 
     # Get the metric function
     if data_args.task_name is not None:
-        metric = load_metric("glue", data_args.task_name)
+        metric = evaluate.load("glue", data_args.task_name)
         compute_metrics = make_compute_metrics(metric)
 
 
