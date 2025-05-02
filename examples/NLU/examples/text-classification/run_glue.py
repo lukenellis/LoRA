@@ -386,7 +386,7 @@ def main():
         revision=model_args.model_revision,
         use_auth_token=True if model_args.use_auth_token else None,
     )
-    if model_args.apply_lora:
+    if model_args.apply_lora and model_args.lora_r != -1:
         if model_args.lora_r is not None and model_args.lora_alpha is not None:
             lora_config = LoraConfig(
                 r=model_args.lora_r,
@@ -398,6 +398,7 @@ def main():
             model.print_trainable_parameters()
         else:
             raise ValueError("LoRA requires both --lora_r and --lora_alpha to be set.")
+
                                      
     trainable_params = []
     if model_args.apply_lora:
