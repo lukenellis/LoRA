@@ -1,3 +1,5 @@
+For our project, run lora.py file.
+
 # LoRA: Low-Rank Adaptation of Large Language Models
 
 This repo contains the source code of the Python package `loralib` and several examples of how to integrate it with PyTorch models, such as those in Hugging Face.
