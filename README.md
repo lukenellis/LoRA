@@ -1,6 +1,6 @@
-**For our project, run lora.py file.
+**For our project, run lora.py file.**
 
-In a Google Colab file, open lora.py and first run the #setup commands.
+**In a Google Colab file, open lora.py and first run the #setup commands.
 Then, to run with LoRA rank 8, run the command below.
 To run with LoRA dynamic ranks, run the last command.**
 
